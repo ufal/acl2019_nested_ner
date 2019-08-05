@@ -1,0 +1,140 @@
+Source code: Neural Architectures for Nested NER through Linearization
+======================================================================
+Jana Straková, Milan Straka and Jan Hajič
+https://aclweb.org/anthology/papers/P/P19/P19-1527/
+{strakova,straka,hajic}@ufal.mff.cuni.cz
+
+License
+-------
+
+Copyright 2019 Institute of Formal and Applied Linguistics, Faculty of
+Mathematics and Physics, Charles University, Czech Republic.
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+Please cite as:
+---------------
+
+@inproceedings{strakova-etal-2019-neural,
+    title = {{Neural Architectures for Nested {NER} through Linearization}},
+    author = {Jana Strakov{\'a} and Milan Straka and Jan Haji\v{c}},
+    booktitle = {Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics},
+    month = jul,
+    year = {2019},
+    address = {Florence, Italy},
+    publisher = {Association for Computational Linguistics},
+    url = {https://www.aclweb.org/anthology/P19-1527},
+    pages = {5326--5331},
+}
+
+How to run the tagger
+---------------------
+
+1. Install requirements
+
+pip install -r requirements.txt
+
+2. Download the data
+
+ACE-2004: https://catalog.ldc.upenn.edu/LDC2005T09
+ACE-2005: https://catalog.ldc.upenn.edu/LDC2006T06
+GENIA: http://www.geniaproject.org/
+
+3. Create inputs
+
+The input of the tagger is in the CoNLL-2003 BILOU format. CoNLL-2003 shared
+task data format is described here:
+https://www.clips.uantwerpen.be/conll2003/ner/ . BILOU format is described
+here (Ratinov and Roth, 2009): https://www.aclweb.org/anthology/W09-1119 .
+
+The input format is a CoNLL format, with one token per line, sentences
+delimited by empty line. For each token, columns are separated by tabs. First
+column is the surface token, second column is lemma, third column is a POS tag
+and fourth column is the BILOU encoded NE label.
+
+For flat corpora (e.g. CoNLL-2003 English and German), the fourth column bears
+exactly one NE label, e.g. (example from CoNLL-2003 English):
+
+-DOCSTART-      -docstart-      NN      O
+
+EU      EU      NNP     U-ORG
+rejects reject  VBZ     O
+German  german  JJ      U-MISC
+call    call    NN      O
+to      to      TO      O
+boycott boycott VB      O
+British british JJ      U-MISC
+lamb    lamb    NN      O
+.       .       .       O
+
+For nested NE corpora, the NE tags are linearized (flattened) according to
+rules described in the paper, e.g. (example from ACE-2004):
+
+The	the	DT	B-GPE
+Chinese	chinese	JJ	I-GPE|U-GPE
+government	government	NN	L-GPE
+and	and	CC	O
+the	the	DT	B-GPE
+Australian	australian	JJ	I-GPE|U-GPE
+government	government	NN	L-GPE
+signed	sign	VBD	O
+an	an	DT	O
+agreement	agreement	NN	O
+today	today	NN	O
+,	,	,	O
+wherein	wherein	WRB	O
+the	the	DT	B-GPE
+Australian	australian	JJ	I-GPE|U-GPE
+party	party	NN	L-GPE
+would	would	MD	O
+provide	provide	VB	O
+China	China	NNP	U-GPE
+with	with	IN	O
+a	a	DT	O
+preferential	preferential	JJ	O
+financial	financial	JJ	O
+loan	loan	NN	O
+of	of	IN	O
+150	150	CD	O
+million	million	CD	O
+Australian	australian	JJ	U-GPE
+dollars	dollar	NNS	O
+.	.	.	O
+
+The lemmatization and POS tagging can be done with e.g. UDPipe
+(http://ufal.mff.cuni.cz/udpipe) or with MorphoDiTa
+(http://ufal.mff.cuni.cz/morphodita) or with any tool of your choice. If you
+don't have any POS tagger or lemmatizer, simply fill the respective columns
+with dummy (e.g. "_").
+
+4. Get word embeddings
+
+- word2vec,
+- FastText,
+- BERT,
+- ELMo,
+- Flair
+
+from sources described in the paper. The input formats are:
+
+- word2vec: The native word2vec text file. 
+- FastText: The native FastText binary.
+- contextualized embeddings (BERT, ELMo, Flair): A text file with one token per
+  line, first column is the token, all other columns are the vector real valued
+  numbers; columns separated with space. The format is readable for human eyes,
+  but quite large, sorry for the inconvenience. The per-token BERT
+  contextualized word embeddings are created as an average of all token
+  corresponding BERT subowords. The ELMo and Flair are generated using this
+  code: https://github.com/zalandoresearch/flair. 
+
+You can also run the tagger without pretrained word embeddings just with
+end-to-end word embeddings and character-level embeddings (created inside the
+tagger), or with a subset of the above mentioned pretrained word embeddings.
+
+5. Run the tagger
+
+Usage example:
+
+./tagger.py --corpus=CoNLL_en --train_data=conll_en/train_dev_bilou.conll --test_data=conll_en/test_bilou.conll --decoding=seq2seq --epochs=10:1e-3,8:1e-4 --form_wes_model=word_embeddings/conll_en_form.txt --lemma_wes_model=word_embeddings/conll_en_lemma.txt --bert_embeddings_train=bert_embeddings/conll_en_train_dev_bert_large_embeddings.txt --bert_embeddings_test=bert_embeddings/conll_en_test_bert_large_embeddings.txt --flair_train=flair_embeddings/conll_en_train_dev.txt --flair_test=flair_embeddings/conll_en_test.txt --elmo_train=elmo_embeddings/conll_en_train_dev.txt --elmo_test=elmo_embeddings/conll_en_test.txt --name=seq2seq+ELMo+BERT+Flair
