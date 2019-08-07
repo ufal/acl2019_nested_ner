@@ -183,7 +183,7 @@ class Network:
                 else:
                     loss = tf.losses.sparse_softmax_cross_entropy(self.tags, output_layer, weights=weights)
                 self.predictions = tf.argmax(output_layer, axis=2)
-                elf.predictions_training = self.predictions
+                self.predictions_training = self.predictions
             elif args.decoding in ["LSTM", "seq2seq"]: # Decoder
                 # Generate target embeddings for target chars, of shape [target_chars, args.char_dim].
                 tag_embeddings = tf.get_variable("tag_embeddings", shape=[num_tags, args.we_dim], dtype=tf.float32)

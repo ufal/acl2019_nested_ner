@@ -13,4 +13,8 @@ set -e
 
 cat test.conll | ../conll2eval_nested.py > test_gold_entities.txt
 
+# Seq2seq
 (cd ../ && ./tagger.py --corpus=ACE2004 --train_data=test_run/train.conll --test_data=test_run/test.conll --decoding=seq2seq --epochs=50:1e-3,8:1e-4 --name=test_run)
+
+# LSTM-CRF
+(cd ../ && ./tagger.py --corpus=ACE2004 --train_data=test_run/train.conll --test_data=test_run/test.conll --decoding=CRF --epochs=50:1e-3,8:1e-4 --name=test_run)
