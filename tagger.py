@@ -394,7 +394,7 @@ class Network:
                         self.session.run(self.metrics_summarize["F1"][dataset_name], {self.metrics["F1"]: f1})
 
             return f1
-       elif args.corpus in [ "ACE2004", "ACE2005", "GENIA" ]: # nested named entities evaluation
+        elif args.corpus in [ "ACE2004", "ACE2005", "GENIA" ]: # nested named entities evaluation
             os.system("cd {} && ../../run_eval_nested.sh {} {}".format(args.logdir, dataset_name, os.path.dirname(args.__dict__[dataset_name + "_data"])))
 
             with open("{}/{}.eval".format(args.logdir,dataset_name), "r", encoding="utf-8") as result_file:
